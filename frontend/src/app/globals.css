@@ -1,0 +1,15 @@
+:root { color-scheme: dark; }
+body { margin: 0; font-family: Inter, sans-serif; background: #0b1020; color: #dce3f1; }
+.layout { display: grid; grid-template-columns: 280px 1fr; gap: 16px; padding: 16px; }
+.panel { background: #121a2f; border: 1px solid #22304e; border-radius: 12px; padding: 12px; display: grid; gap: 8px; height: fit-content; }
+input { width: 100%; background: #0f172a; color: #dce3f1; border: 1px solid #314264; border-radius: 8px; padding: 8px; }
+.row { display: flex; gap: 8px; align-items: center; }
+.table-wrap { overflow: auto; border: 1px solid #22304e; border-radius: 12px; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th, td { padding: 8px; border-bottom: 1px solid #1f2b45; white-space: nowrap; }
+th { position: sticky; top: 0; background: #121a2f; cursor: pointer; }
+tr:hover { background: #17233d; }
+.pos { color: #52d273; }
+.neg { color: #f87171; }
+.modal-backdrop { position: fixed; inset: 0; background: #0008; display: grid; place-items: center; }
+.modal { width: 700px; max-width: 95vw; background: #111827; border: 1px solid #334155; border-radius: 12px; padding: 16px; }
