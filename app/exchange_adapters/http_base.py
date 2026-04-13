@@ -2,11 +2,35 @@ from __future__ import annotations
 
 import asyncio
 from datetime import datetime, timezone
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 
 from app.core.symbols import canonical_symbol
 from app.core.types import CanonicalInstrument, ContractType, FundingSnapshot, InstrumentType, TopOfBook
 from app.exchange_adapters.base import ExchangeAdapter
+
+
+def _to_decimal_or(default: Decimal, raw: str | int | float | None) -> Decimal:
+    if raw is None:
+        return default
+    try:
+        txt = str(raw).strip()
+        if txt == "":
+            return default
+        return Decimal(txt)
+    except (InvalidOperation, ValueError, TypeError):
+        return default
+
+
+def _to_decimal_or_none(raw: str | int | float | None) -> Decimal | None:
+    if raw is None:
+        return None
+    try:
+        txt = str(raw).strip()
+        if txt == "":
+            return None
+        return Decimal(txt)
+    except (InvalidOperation, ValueError, TypeError):
+        return None
 
 
 class RestPollingAdapter(ExchangeAdapter):
@@ -27,11 +51,9 @@ class RestPollingAdapter(ExchangeAdapter):
                 return await resp.json()
 
     async def fetch_funding_history(self, canonical_symbol: str, limit: int = 50) -> list[FundingSnapshot]:
-        # Many exchanges have unique history route shapes; keep v1 scoped to current funding.
         return []
 
     async def ws_subscribe_top_of_book(self) -> None:
-        # Production deployment should run dedicated WS consumers; REST fallback exists for resiliency.
         await asyncio.sleep(0)
 
     def _to_instrument(
@@ -58,10 +80,10 @@ class RestPollingAdapter(ExchangeAdapter):
             settle_asset=settle,
             contract_type=contract_type,
             instrument_type=instrument_type,
-            tick_size=Decimal(tick_size),
-            qty_step=Decimal(qty_step),
-            min_qty=Decimal(min_qty),
-            contract_size=Decimal(contract_size),
+            tick_size=_to_decimal_or(Decimal("0.1"), tick_size),
+            qty_step=_to_decimal_or(Decimal("0.001"), qty_step),
+            min_qty=_to_decimal_or(Decimal("0.001"), min_qty),
+            contract_size=_to_decimal_or(Decimal("1"), contract_size),
             funding_interval_minutes=funding_interval_minutes,
         )
 
@@ -79,12 +101,12 @@ class RestPollingAdapter(ExchangeAdapter):
             exchange=self.name,
             canonical_symbol=canonical,
             ts=datetime.now(timezone.utc),
-            bid=Decimal(bid),
-            ask=Decimal(ask),
-            bid_size=Decimal(bid_size),
-            ask_size=Decimal(ask_size),
-            mark_price=Decimal(mark) if mark else None,
-            index_price=Decimal(index) if index else None,
+            bid=_to_decimal_or(Decimal("0"), bid),
+            ask=_to_decimal_or(Decimal("0"), ask),
+            bid_size=_to_decimal_or(Decimal("0"), bid_size),
+            ask_size=_to_decimal_or(Decimal("0"), ask_size),
+            mark_price=_to_decimal_or_none(mark),
+            index_price=_to_decimal_or_none(index),
         )
 
     def _to_funding(
@@ -99,8 +121,8 @@ class RestPollingAdapter(ExchangeAdapter):
             exchange=self.name,
             canonical_symbol=canonical,
             ts=datetime.now(timezone.utc),
-            funding_rate=Decimal(rate),
-            mark_price=Decimal(mark_price) if mark_price else None,
+            funding_rate=_to_decimal_or(Decimal("0"), rate),
+            mark_price=_to_decimal_or_none(mark_price),
             next_funding_time=next_funding_time,
             funding_interval_minutes=interval_minutes,
         )
