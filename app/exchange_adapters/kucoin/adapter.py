@@ -10,13 +10,40 @@ class KuCoinAdapter(RestPollingAdapter):
     instruments_url = "https://api-futures.kucoin.com/api/v1/contracts/active"
     ticker_url = "https://api-futures.kucoin.com/api/v1/allTickers"
 
+    @staticmethod
+    def _extract_contracts(data: dict) -> list[dict]:
+        raw = data.get("data", [])
+        if isinstance(raw, list):
+            return raw
+        if isinstance(raw, dict):
+            for key in ("contracts", "items", "list"):
+                value = raw.get(key)
+                if isinstance(value, list):
+                    return value
+        return []
+
+    @staticmethod
+    def _extract_tickers(data: dict) -> list[dict]:
+        raw = data.get("data", [])
+        if isinstance(raw, list):
+            return raw
+        if isinstance(raw, dict):
+            ticker = raw.get("ticker")
+            if isinstance(ticker, list):
+                return ticker
+            for key in ("items", "list"):
+                value = raw.get(key)
+                if isinstance(value, list):
+                    return value
+        return []
+
     async def fetch_instruments(self):
         data = await self._get_json(self.instruments_url)
         out = []
-        for i in data.get("data", []):
+        for i in self._extract_contracts(data):
             out.append(
                 self._to_instrument(
-                    native_symbol=i["symbol"],
+                    native_symbol=i.get("symbol", ""),
                     base=i.get("baseCurrency", ""),
                     quote=i.get("quoteCurrency", "USDT"),
                     settle=i.get("settleCurrency", "USDT"),
@@ -30,7 +57,7 @@ class KuCoinAdapter(RestPollingAdapter):
     async def fetch_top_of_book_snapshot(self) -> list[TopOfBook]:
         data = await self._get_json(self.ticker_url)
         out = []
-        for i in data.get("data", {}).get("ticker", []):
+        for i in self._extract_tickers(data):
             symbol = i.get("symbol", "")
             base = symbol.replace("USDTM", "")
             out.append(
@@ -48,7 +75,7 @@ class KuCoinAdapter(RestPollingAdapter):
     async def fetch_current_funding(self) -> list[FundingSnapshot]:
         data = await self._get_json(self.ticker_url)
         out = []
-        for i in data.get("data", {}).get("ticker", []):
+        for i in self._extract_tickers(data):
             symbol = i.get("symbol", "")
             base = symbol.replace("USDTM", "")
             next_ts = i.get("nextFundingRateTime")
