@@ -4,5 +4,6 @@ COPY pyproject.toml README.md ./
 COPY app ./app
 COPY alembic ./alembic
 COPY alembic.ini ./
+COPY scripts/api-entrypoint.sh /app/scripts/api-entrypoint.sh
 RUN pip install --no-cache-dir -e .
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["/app/scripts/api-entrypoint.sh"]
