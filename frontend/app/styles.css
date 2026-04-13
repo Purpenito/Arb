@@ -1,0 +1,10 @@
+:root { color-scheme: dark; }
+body { margin: 0; font-family: Inter, Arial, sans-serif; background: #0b1220; color: #e5e7eb; }
+.container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+.grid { display: grid; gap: 16px; grid-template-columns: 1fr 1fr; }
+.card { border: 1px solid #24324a; border-radius: 10px; background: #111a2c; padding: 12px; }
+.table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.table th, .table td { border-bottom: 1px solid #223148; padding: 6px; text-align: left; }
+.pill-ok { color: #34d399; }
+.pill-warn { color: #f59e0b; }
+@media (max-width: 1000px){ .grid { grid-template-columns: 1fr; } }
