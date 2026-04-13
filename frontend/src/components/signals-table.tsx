@@ -2,57 +2,67 @@
 
 import { Signal } from '@/types/signal'
 
-const sortableKeys = ['net_profit_pct', 'net_funding_edge_pct', 'estimated_pnl_usdt', 'max_executable_size_usdt', 'liquidity_score', 'symbol', 'updated_at'] as const
+type SortKey = 'symbol' | 'gross_spread_pct' | 'total_fees_pct' | 'net_profit_pct' | 'net_funding_edge_pct' | 'max_executable_size_usdt' | 'estimated_pnl_usdt' | 'liquidity_score' | 'updated_at' | 'signal_lifetime_sec'
 
-type SortKey = (typeof sortableKeys)[number]
+function sparkline(data: number[]) {
+  const bars = '▁▂▃▄▅▆▇█'
+  const min = Math.min(...data)
+  const max = Math.max(...data)
+  return data.map((v) => bars[Math.min(7, Math.floor(((v - min) / ((max - min) || 1)) * 7))]).join('')
+}
 
-export function SignalsTable({ signals, onSelect, sortKey, setSortKey }: { signals: Signal[]; onSelect: (s: Signal) => void; sortKey: SortKey; setSortKey: (k: SortKey) => void }) {
+export function SignalsTable({ signals, onSelect, sortKey, sortDir, setSort }: { signals: Signal[]; onSelect: (s: Signal) => void; sortKey: SortKey; sortDir: 'asc' | 'desc'; setSort: (k: SortKey) => void }) {
   const sorted = [...signals].sort((a, b) => {
-    const va = (a[sortKey] ?? -Infinity) as number | string
-    const vb = (b[sortKey] ?? -Infinity) as number | string
-    return va > vb ? -1 : 1
+    const av = a[sortKey] as number | string
+    const bv = b[sortKey] as number | string
+    const result = av > bv ? 1 : av < bv ? -1 : 0
+    return sortDir === 'asc' ? result : -result
   })
 
+  const hs = (key: SortKey, label: string) => <th onClick={() => setSort(key)}>{label}</th>
+
   return (
-    <div className="table-wrap">
+    <div className="table-wrap terminal">
       <table>
         <thead>
           <tr>
-            <th onClick={() => setSortKey('symbol')}>Symbol</th>
-            <th>Arbitrage Type</th>
-            <th>Exchange Long / Buy</th>
-            <th>Exchange Short / Sell</th>
-            <th>Long price</th>
-            <th>Short price</th>
-            <th>Spread %</th>
-            <th>Fees %</th>
-            <th onClick={() => setSortKey('net_profit_pct')}>Net profit %</th>
-            <th onClick={() => setSortKey('net_funding_edge_pct')}>Funding edge %</th>
-            <th onClick={() => setSortKey('max_executable_size_usdt')}>Executable size</th>
-            <th onClick={() => setSortKey('estimated_pnl_usdt')}>Estimated PnL</th>
-            <th onClick={() => setSortKey('liquidity_score')}>Liquidity</th>
-            <th onClick={() => setSortKey('updated_at')}>Updated at</th>
-            <th>Action</th>
+            {hs('symbol', 'Ticker')}
+            <th>Type</th>
+            <th>LONG / BUY</th>
+            <th>SHORT / SELL</th>
+            <th>Entry Prices</th>
+            {hs('gross_spread_pct', 'Spread %')}
+            {hs('total_fees_pct', 'Fees %')}
+            {hs('net_profit_pct', 'Net Profit %')}
+            {hs('net_funding_edge_pct', 'Funding Edge %')}
+            {hs('max_executable_size_usdt', 'Exec Size USDT')}
+            {hs('estimated_pnl_usdt', 'Estimated PnL')}
+            {hs('liquidity_score', 'Liquidity')}
+            {hs('updated_at', 'Updated')}
+            <th>Spread History</th>
+            {hs('signal_lifetime_sec', 'Lifetime')}
+            <th className="sticky-right">Open</th>
           </tr>
         </thead>
         <tbody>
           {sorted.map((s) => (
             <tr key={s.signal_id} onClick={() => onSelect(s)}>
-              <td>{s.symbol}</td>
-              <td>{s.arbitrage_type}</td>
+              <td><span className="coin">{s.symbol[0]}</span>{s.symbol}</td>
+              <td><span className="tag">{s.arbitrage_type}</span></td>
               <td>{s.buy_or_long.exchange}</td>
               <td>{s.sell_or_short.exchange}</td>
-              <td>{s.buy_or_long.price.toFixed(2)}</td>
-              <td>{s.sell_or_short.price.toFixed(2)}</td>
+              <td>{s.buy_or_long.price.toFixed(4)} / {s.sell_or_short.price.toFixed(4)}</td>
               <td>{s.gross_spread_pct.toFixed(3)}</td>
               <td>{s.total_fees_pct.toFixed(3)}</td>
-              <td className={s.net_profit_pct >= 0 ? 'pos' : 'neg'}>{s.net_profit_pct.toFixed(3)}</td>
+              <td className={s.net_profit_pct >= 0 ? 'pos strong' : 'neg strong'}>{s.net_profit_pct.toFixed(3)}</td>
               <td className={(s.net_funding_edge_pct ?? 0) >= 0 ? 'pos' : 'neg'}>{s.net_funding_edge_pct?.toFixed(3) ?? '—'}</td>
               <td>{s.max_executable_size_usdt.toLocaleString()}</td>
-              <td>{s.estimated_pnl_usdt.toFixed(2)}</td>
+              <td className={s.estimated_pnl_usdt >= 0 ? 'pos' : 'neg'}>{s.estimated_pnl_usdt.toFixed(2)}</td>
               <td>{s.liquidity_score.toFixed(2)}</td>
               <td>{new Date(s.updated_at).toLocaleTimeString()}</td>
-              <td><a href={s.buy_or_long.link} onClick={(e) => e.stopPropagation()} target="_blank">Open</a></td>
+              <td className="mono">{sparkline(s.spread_history_pct)}</td>
+              <td>{Math.floor(s.signal_lifetime_sec / 60)}m</td>
+              <td className="sticky-right"><a href={s.buy_or_long.link} onClick={(e) => e.stopPropagation()} target="_blank">Trade ↗</a></td>
             </tr>
           ))}
         </tbody>

@@ -24,5 +24,13 @@ export interface Signal {
   max_executable_size_usdt: number
   estimated_pnl_usdt: number
   liquidity_score: number
+  spread_history_pct: number[]
+  signal_lifetime_sec: number
   updated_at: string
+}
+
+export interface FundingMonitorRow {
+  symbol: string
+  rates: Array<{ exchange: string; funding_rate_pct: number }>
+  max_funding_spread_pct: number
 }

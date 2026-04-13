@@ -28,17 +28,25 @@ class Signal(BaseModel):
     max_executable_size_usdt: float
     estimated_pnl_usdt: float
     liquidity_score: float
+    spread_history_pct: list[float] = []
+    signal_lifetime_sec: int = 0
     updated_at: datetime
 
 
 class SignalFilter(BaseModel):
     arbitrage_types: list[ArbitrageType] = []
+    long_exchanges: list[str] = []
+    short_exchanges: list[str] = []
     exchanges: list[str] = []
-    coins: list[str] = []
+    whitelist_coins: list[str] = []
+    blacklist_coins: list[str] = []
     min_spread_pct: float | None = None
     min_net_profit_pct: float | None = None
+    max_net_profit_pct: float | None = None
     min_volume_usdt: float | None = None
+    max_volume_usdt: float | None = None
     min_funding_edge_pct: float | None = None
+    only_profitable: bool = False
     only_with_funding: bool = False
     search: str | None = None
 

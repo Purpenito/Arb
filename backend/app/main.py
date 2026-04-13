@@ -5,6 +5,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 
 from app.api.v1.alerts import router as alerts_router
 from app.api.v1.history import router as history_router
+from app.api.v1.funding import router as funding_router
 from app.api.v1.signals import router as signals_router, service
 from app.core.config import settings
 from app.ws.manager import ConnectionManager
@@ -22,6 +23,7 @@ async def lifespan(_: FastAPI):
 app = FastAPI(title=settings.app_name, lifespan=lifespan)
 app.include_router(signals_router, prefix='/api/v1')
 app.include_router(history_router, prefix='/api/v1')
+app.include_router(funding_router, prefix='/api/v1')
 app.include_router(alerts_router, prefix='/api/v1')
 
 
