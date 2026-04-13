@@ -1,3 +1,4 @@
+import os
 from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 from alembic import context
@@ -12,10 +13,13 @@ if config.config_file_name is not None:
 target_metadata = Base.metadata
 
 
-# Alembic runs in sync mode by default; normalize async DSN to a sync driver.
-if config.get_main_option("sqlalchemy.url"):
-    sync_url = to_sync_dsn(config.get_main_option("sqlalchemy.url"))
-    config.set_main_option("sqlalchemy.url", sync_url)
+def _resolve_sqlalchemy_url() -> str:
+    env_url = os.getenv("DATABASE_URL") or os.getenv("POSTGRES_DSN")
+    url = env_url or config.get_main_option("sqlalchemy.url")
+    return to_sync_dsn(url)
+
+
+config.set_main_option("sqlalchemy.url", _resolve_sqlalchemy_url())
 
 
 def run_migrations_offline() -> None:
