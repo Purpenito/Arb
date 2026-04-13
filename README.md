@@ -99,6 +99,12 @@ npm run dev
 ```
 
 
+
+## Troubleshooting
+
+- If Alembic was using an async DSN (`postgresql+asyncpg://...`) and failed with `MissingGreenlet`, this repo now auto-converts to a sync DSN for migrations (`postgresql+psycopg://...`) inside `alembic/env.py`.
+- Re-run: `docker compose run --rm api alembic upgrade head`.
+
 ## Migration note
 
 - `0001` is the historical bootstrap migration.

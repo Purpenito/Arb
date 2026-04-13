@@ -3,12 +3,19 @@ from sqlalchemy import engine_from_config, pool
 from alembic import context
 
 from app.storage.models import Base
+from app.storage.url import to_sync_dsn
 
 config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 target_metadata = Base.metadata
+
+
+# Alembic runs in sync mode by default; normalize async DSN to a sync driver.
+if config.get_main_option("sqlalchemy.url"):
+    sync_url = to_sync_dsn(config.get_main_option("sqlalchemy.url"))
+    config.set_main_option("sqlalchemy.url", sync_url)
 
 
 def run_migrations_offline() -> None:
