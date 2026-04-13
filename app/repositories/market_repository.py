@@ -1,11 +1,13 @@
 from collections import defaultdict
+from dataclasses import asdict, is_dataclass
 from datetime import datetime, timezone
-from decimal import Decimal
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.json_utils import to_json_safe
 from app.core.types import FundingSnapshot, TopOfBook
 from app.storage.models import BestQuote, Exchange, FundingCurrent, Instrument
+
 
 
 class MarketRepository:
@@ -28,6 +30,7 @@ class MarketRepository:
                 Instrument.native_symbol == i.native_symbol,
             )
         )
+        raw = asdict(i) if is_dataclass(i) else dict(i.__dict__)
         payload = dict(
             canonical_symbol=i.canonical_symbol,
             base_asset=i.base_asset,
@@ -41,7 +44,7 @@ class MarketRepository:
             contract_size=i.contract_size,
             funding_interval_minutes=i.funding_interval_minutes,
             is_active=True,
-            raw_metadata_json=i.__dict__,
+            raw_metadata_json=to_json_safe(raw),
         )
         if row:
             for k, v in payload.items():
