@@ -72,10 +72,12 @@ postgres (normalized market/funding/opportunities)
 ```bash
 cp .env.example .env
 docker compose up --build
+# enable frontend dashboard explicitly:
+# docker compose --profile ui up --build
 ```
 
 - Backend: http://localhost:8000/docs
-- Frontend: http://localhost:3000
+- Frontend: http://localhost:3000 (only when `--profile ui` is enabled)
 - API container now auto-runs `alembic upgrade head` on startup (with retries) before launching Uvicorn.
 
 ## Local dev
