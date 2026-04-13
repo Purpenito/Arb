@@ -98,6 +98,13 @@ npm install
 npm run dev
 ```
 
+
+## Migration note
+
+- `0001` is the historical bootstrap migration.
+- `0002_create_missing_core_tables` is an idempotent schema-completion migration that creates all required core tables if they are missing (useful when old environments were migrated with only `exchanges`).
+- Run `alembic upgrade head` after pulling updates.
+
 ## Testing
 
 ```bash
