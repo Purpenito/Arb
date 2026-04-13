@@ -59,8 +59,8 @@ export default function HomePage() {
   return (
     <main className="terminal-page">
       <header className="topbar">
-        <h1>Arbitrage Scanner Terminal</h1>
-        <nav><Link href="/">Signals</Link> · <Link href="/funding-monitor">Funding Monitor</Link> · <Link href="/history">History</Link></nav>
+        <h1>Спотовый скринер</h1>
+        <nav><Link href="/">Сигналы</Link> · <Link href="/funding-monitor">Funding Monitor</Link> · <Link href="/history">История</Link></nav>
       </header>
       <section className="stats-row">
         <div className="stat">Total: <b>{topStats.total}</b></div>

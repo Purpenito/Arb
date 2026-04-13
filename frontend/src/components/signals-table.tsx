@@ -41,7 +41,7 @@ export function SignalsTable({ signals, onSelect, sortKey, sortDir, setSort }: {
             {hs('updated_at', 'Updated')}
             <th>Spread History</th>
             {hs('signal_lifetime_sec', 'Lifetime')}
-            <th className="sticky-right">Open</th>
+            <th className="sticky-right">Биржи</th>
           </tr>
         </thead>
         <tbody>
@@ -62,7 +62,7 @@ export function SignalsTable({ signals, onSelect, sortKey, sortDir, setSort }: {
               <td>{new Date(s.updated_at).toLocaleTimeString()}</td>
               <td className="mono">{sparkline(s.spread_history_pct)}</td>
               <td>{Math.floor(s.signal_lifetime_sec / 60)}m</td>
-              <td className="sticky-right"><a href={s.buy_or_long.link} onClick={(e) => e.stopPropagation()} target="_blank">Trade ↗</a></td>
+              <td className="sticky-right links"><a href={s.buy_or_long.link} onClick={(e) => e.stopPropagation()} target="_blank">{s.buy_or_long.exchange} ↗</a><a href={s.sell_or_short.link} onClick={(e) => e.stopPropagation()} target="_blank">{s.sell_or_short.exchange} ↗</a></td>
             </tr>
           ))}
         </tbody>
